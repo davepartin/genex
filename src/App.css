@@ -1,0 +1,278 @@
+.app {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  background: var(--charcoal);
+}
+
+/*
+ * On a phone the frame is simply the viewport. On anything wider it keeps the
+ * alphabet in a portrait shape instead of stretching 24 tall tiles across a desk.
+ */
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Wider than any phone in portrait: cap the grid so tiles keep their 2:3 shape. */
+@media (min-width: 600px) {
+  .frame {
+    width: min(100vw, max(45dvh, 320px));
+    box-shadow: 0 0 70px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* ---------- grid of touching tiles ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.tile {
+  position: relative;
+  container-type: inline-size;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--cream);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 160ms ease;
+}
+
+.tile:active {
+  filter: brightness(1.12);
+}
+
+.tile-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Stand-in art used until the charcoal JPEG is present in public/tiles/. */
+.tile-art--fallback {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(23, 21, 15, 0.07), transparent 62%),
+    linear-gradient(160deg, var(--cream) 0%, var(--cream-deep) 100%);
+  box-shadow: inset 0 0 0 1px rgba(23, 21, 15, 0.12);
+}
+
+.tile-art__letter {
+  font-family: var(--serif);
+  font-size: clamp(28px, 11vw, 74px);
+  font-size: 46cqw;
+  line-height: 1;
+  color: rgba(23, 21, 15, 0.72);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.tile__word {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 24% 5% 5.5%;
+  font-family: var(--serif);
+  font-size: clamp(9px, 2.7vw, 15px);
+  font-size: clamp(9px, 11.5cqw, 16px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-align: center;
+  color: #f7f1e4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  background: linear-gradient(
+    to top,
+    rgba(9, 8, 5, 0.72) 0%,
+    rgba(9, 8, 5, 0.52) 42%,
+    rgba(9, 8, 5, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* ---------- flip to fullscreen ---------- */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  perspective: 1400px;
+  -webkit-perspective: 1400px;
+}
+
+.stage__veil {
+  position: absolute;
+  background: var(--cream);
+  opacity: 0;
+  transition: opacity var(--flip);
+}
+
+.stage--open .stage__veil {
+  opacity: 1;
+}
+
+.card {
+  position: absolute;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition:
+    top var(--flip),
+    left var(--flip),
+    width var(--flip),
+    height var(--flip),
+    transform var(--flip);
+}
+
+.card__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--cream);
+}
+
+.card__face--front {
+  container-type: inline-size;
+}
+
+.card__face--back {
+  transform: rotateY(180deg);
+}
+
+/* ---------- story ---------- */
+
+.story {
+  container-type: inline-size;
+  transform-origin: top left;
+  transition: transform var(--flip);
+}
+
+.story__scroll {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 6% 7%;
+}
+
+.story__inner {
+  margin: auto 0;
+  width: 100%;
+  align-self: center;
+}
+
+.story__letter {
+  margin: 0 0 0.55rem;
+  font-size: clamp(12px, 3.2vw, 15px);
+  font-size: clamp(12px, 3.3cqw, 16px);
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.story__title {
+  margin: 0 0 0.7em;
+  font-size: clamp(29px, 8.4vw, 46px);
+  font-size: clamp(29px, 8.6cqw, 46px);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: var(--charcoal);
+}
+
+.story__summary {
+  margin: 0 0 1.1em;
+  font-size: clamp(16px, 4.3vw, 21px);
+  font-size: clamp(16px, 4.4cqw, 21px);
+  line-height: 1.52;
+  color: var(--ink);
+}
+
+.story__keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em 0.7em;
+  margin: 0 0 1.6em;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(11.5px, 3.2vw, 15px);
+  font-size: clamp(11.5px, 3.3cqw, 15px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Separator rides on the preceding word so it never starts a wrapped line. */
+.story__keywords li:not(:last-child)::after {
+  content: ' ·';
+  color: rgba(90, 81, 66, 0.55);
+}
+
+.story__verse {
+  margin: 0 0 1.4em;
+  padding-left: 0.85em;
+  border-left: 1px solid rgba(23, 21, 15, 0.28);
+}
+
+.story__verse-text {
+  margin: 0 0 0.5em;
+  font-size: clamp(15.5px, 4.2vw, 20px);
+  font-size: clamp(15.5px, 4.3cqw, 20px);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.story__verse-ref {
+  font-size: clamp(11.5px, 3.1vw, 14px);
+  font-size: clamp(11.5px, 3.2cqw, 14px);
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.story__christ {
+  margin: 0;
+  padding-top: 1em;
+  border-top: 1px solid rgba(23, 21, 15, 0.18);
+  font-size: clamp(16.5px, 4.6vw, 22px);
+  font-size: clamp(16.5px, 4.7cqw, 22px);
+  line-height: 1.45;
+  color: var(--charcoal);
+}
+
+.story__hint {
+  margin: 2.2em 0 0;
+  font-size: clamp(11px, 3vw, 13px);
+  font-size: clamp(11px, 3.1cqw, 13px);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(90, 81, 66, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .story,
+  .stage__veil {
+    transition-duration: 1ms;
+  }
+}
