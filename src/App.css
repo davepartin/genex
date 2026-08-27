@@ -1,8 +1,28 @@
 .app {
+  display: flex;
+  justify-content: center;
   height: 100vh;
   height: 100dvh;
   width: 100%;
   background: var(--charcoal);
+}
+
+/*
+ * On a phone the frame is simply the viewport. On anything wider it keeps the
+ * alphabet in a portrait shape instead of stretching 24 tall tiles across a desk.
+ */
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Wider than any phone in portrait: cap the grid so tiles keep their 2:3 shape. */
+@media (min-width: 600px) {
+  .frame {
+    width: min(100vw, max(45dvh, 320px));
+    box-shadow: 0 0 70px rgba(0, 0, 0, 0.55);
+  }
 }
 
 /* ---------- grid of touching tiles ---------- */
@@ -12,13 +32,13 @@
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(6, 1fr);
   gap: 0;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   width: 100%;
 }
 
 .tile {
   position: relative;
+  container-type: inline-size;
   display: block;
   margin: 0;
   padding: 0;
@@ -50,15 +70,15 @@
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at 50% 42%, rgba(23, 21, 15, 0.06), transparent 62%),
+    radial-gradient(circle at 50% 40%, rgba(23, 21, 15, 0.07), transparent 62%),
     linear-gradient(160deg, var(--cream) 0%, var(--cream-deep) 100%);
   box-shadow: inset 0 0 0 1px rgba(23, 21, 15, 0.12);
 }
 
 .tile-art__letter {
   font-family: var(--serif);
-  font-size: 46cqw;
   font-size: clamp(28px, 11vw, 74px);
+  font-size: 46cqw;
   line-height: 1;
   color: rgba(23, 21, 15, 0.72);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -67,15 +87,21 @@
 .tile__word {
   position: absolute;
   inset: auto 0 0 0;
-  padding: 26% 4% 5%;
+  padding: 24% 5% 5.5%;
   font-family: var(--serif);
   font-size: clamp(9px, 2.7vw, 15px);
-  letter-spacing: 0.06em;
+  font-size: clamp(9px, 11.5cqw, 16px);
+  letter-spacing: 0.04em;
   line-height: 1.1;
   text-align: center;
-  color: #f6efe0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
-  background: linear-gradient(to top, rgba(10, 9, 6, 0.78), rgba(10, 9, 6, 0));
+  color: #f7f1e4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  background: linear-gradient(
+    to top,
+    rgba(9, 8, 5, 0.72) 0%,
+    rgba(9, 8, 5, 0.52) 42%,
+    rgba(9, 8, 5, 0) 100%
+  );
   pointer-events: none;
 }
 
@@ -91,7 +117,6 @@
 
 .stage__veil {
   position: absolute;
-  inset: 0;
   background: var(--cream);
   opacity: 0;
   transition: opacity var(--flip);
@@ -119,23 +144,21 @@
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  background: var(--cream);
 }
 
 .card__face--front {
-  background: var(--cream);
+  container-type: inline-size;
 }
 
 .card__face--back {
   transform: rotateY(180deg);
-  background: var(--cream);
 }
 
 /* ---------- story ---------- */
 
 .story {
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  container-type: inline-size;
   transform-origin: top left;
   transition: transform var(--flip);
 }
@@ -147,27 +170,28 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: clamp(22px, 6vw, 46px) clamp(22px, 6.4vw, 44px);
+  padding: 6% 7%;
 }
 
 .story__inner {
   margin: auto 0;
-  max-width: 34rem;
   width: 100%;
   align-self: center;
 }
 
 .story__letter {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.55rem;
   font-size: clamp(12px, 3.2vw, 15px);
+  font-size: clamp(12px, 3.3cqw, 16px);
   letter-spacing: 0.38em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
 .story__title {
-  margin: 0 0 clamp(0.7rem, 2.6vw, 1.1rem);
+  margin: 0 0 0.7em;
   font-size: clamp(29px, 8.4vw, 46px);
+  font-size: clamp(29px, 8.6cqw, 46px);
   font-weight: 500;
   line-height: 1.06;
   letter-spacing: -0.01em;
@@ -175,8 +199,9 @@
 }
 
 .story__summary {
-  margin: 0 0 clamp(0.9rem, 3.2vw, 1.4rem);
+  margin: 0 0 1.1em;
   font-size: clamp(16px, 4.3vw, 21px);
+  font-size: clamp(16px, 4.4cqw, 21px);
   line-height: 1.52;
   color: var(--ink);
 }
@@ -184,31 +209,33 @@
 .story__keywords {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3em 0.85em;
-  margin: 0 0 clamp(1rem, 3.4vw, 1.5rem);
+  gap: 0.35em 0.7em;
+  margin: 0 0 1.6em;
   padding: 0;
   list-style: none;
   font-size: clamp(11.5px, 3.2vw, 15px);
+  font-size: clamp(11.5px, 3.3cqw, 15px);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-.story__keywords li + li::before {
-  content: '·';
-  margin-right: 0.85em;
-  color: rgba(90, 81, 66, 0.6);
+/* Separator rides on the preceding word so it never starts a wrapped line. */
+.story__keywords li:not(:last-child)::after {
+  content: ' ·';
+  color: rgba(90, 81, 66, 0.55);
 }
 
 .story__verse {
-  margin: 0 0 clamp(1rem, 3.4vw, 1.5rem);
-  padding-left: clamp(0.8rem, 3vw, 1.1rem);
+  margin: 0 0 1.4em;
+  padding-left: 0.85em;
   border-left: 1px solid rgba(23, 21, 15, 0.28);
 }
 
 .story__verse-text {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.5em;
   font-size: clamp(15.5px, 4.2vw, 20px);
+  font-size: clamp(15.5px, 4.3cqw, 20px);
   font-style: italic;
   line-height: 1.5;
   color: var(--ink);
@@ -216,6 +243,7 @@
 
 .story__verse-ref {
   font-size: clamp(11.5px, 3.1vw, 14px);
+  font-size: clamp(11.5px, 3.2cqw, 14px);
   font-style: normal;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -224,16 +252,18 @@
 
 .story__christ {
   margin: 0;
-  padding-top: clamp(0.9rem, 3.2vw, 1.3rem);
+  padding-top: 1em;
   border-top: 1px solid rgba(23, 21, 15, 0.18);
   font-size: clamp(16.5px, 4.6vw, 22px);
+  font-size: clamp(16.5px, 4.7cqw, 22px);
   line-height: 1.45;
   color: var(--charcoal);
 }
 
 .story__hint {
-  margin: clamp(1.2rem, 4.5vw, 2rem) 0 0;
+  margin: 2.2em 0 0;
   font-size: clamp(11px, 3vw, 13px);
+  font-size: clamp(11px, 3.1cqw, 13px);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(90, 81, 66, 0.7);

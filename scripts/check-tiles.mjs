@@ -19,7 +19,9 @@ if (expected.length !== 24) {
 const missing = expected.filter((name) => !existsSync(join(tilesDir, name)))
 const known = new Set(expected)
 const extra = existsSync(tilesDir)
-  ? readdirSync(tilesDir).filter((name) => !name.startsWith('.') && !known.has(name))
+  ? readdirSync(tilesDir).filter(
+      (name) => !name.startsWith('.') && !name.endsWith('.md') && !known.has(name),
+    )
   : []
 
 for (const name of expected) {

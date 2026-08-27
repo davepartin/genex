@@ -8,44 +8,67 @@ const FLIP_MS = 520
 
 type Box = { top: number; left: number; width: number; height: number }
 
+const EMPTY: Box = { top: 0, left: 0, width: 0, height: 0 }
+
+function boxOf(element: Element | null | undefined): Box {
+  const rect = element?.getBoundingClientRect()
+  if (!rect) return EMPTY
+  return { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+}
+
+function px(box: Box) {
+  return {
+    top: `${box.top}px`,
+    left: `${box.left}px`,
+    width: `${box.width}px`,
+    height: `${box.height}px`,
+  }
+}
+
 export default function App() {
+  const frameRef = useRef<HTMLDivElement>(null)
   const tileRefs = useRef<(HTMLButtonElement | null)[]>([])
   const closeTimer = useRef<number | undefined>(undefined)
 
+  // The grid is capped to a portrait frame so the alphabet keeps its phone shape
+  // on a tablet or laptop. The flipped card fills that same frame.
+  const [frame, setFrame] = useState<Box>(EMPTY)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
-  const [box, setBox] = useState<Box | null>(null)
+  const [tile, setTile] = useState<Box>(EMPTY)
   const [expanded, setExpanded] = useState(false)
 
-  const measure = useCallback((index: number): Box => {
-    const rect = tileRefs.current[index]?.getBoundingClientRect()
-    if (!rect) return { top: 0, left: 0, width: 0, height: 0 }
-    return { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+  useLayoutEffect(() => {
+    const measureFrame = () => setFrame(boxOf(frameRef.current))
+    measureFrame()
+    window.addEventListener('resize', measureFrame)
+    window.addEventListener('orientationchange', measureFrame)
+    return () => {
+      window.removeEventListener('resize', measureFrame)
+      window.removeEventListener('orientationchange', measureFrame)
+    }
   }, [])
 
   const openTile = useCallback(
     (index: number) => {
       if (openIndex !== null) return
       window.clearTimeout(closeTimer.current)
-      setBox(measure(index))
+      setTile(boxOf(tileRefs.current[index]))
       setExpanded(false)
       setOpenIndex(index)
     },
-    [measure, openIndex],
+    [openIndex],
   )
 
   const closeTile = useCallback(() => {
     if (openIndex === null || !expanded) return
-    setBox(measure(openIndex))
+    setTile(boxOf(tileRefs.current[openIndex]))
     setExpanded(false)
-    closeTimer.current = window.setTimeout(() => {
-      setOpenIndex(null)
-      setBox(null)
-    }, FLIP_MS)
-  }, [expanded, measure, openIndex])
+    closeTimer.current = window.setTimeout(() => setOpenIndex(null), FLIP_MS)
+  }, [expanded, openIndex])
 
   // Let the card mount over the tile for one frame, then run the flip.
   useLayoutEffect(() => {
-    if (openIndex === null || expanded) return
+    if (openIndex === null) return
     let inner = 0
     const outer = requestAnimationFrame(() => {
       inner = requestAnimationFrame(() => setExpanded(true))
@@ -54,8 +77,6 @@ export default function App() {
       cancelAnimationFrame(outer)
       cancelAnimationFrame(inner)
     }
-    // Only re-run when a card is first opened.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openIndex])
 
   useEffect(() => {
@@ -71,43 +92,42 @@ export default function App() {
 
   const backTap = useTap(closeTile)
   const story = openIndex === null ? null : stories[openIndex]
-
-  const scale = box && typeof window !== 'undefined' ? box.width / window.innerWidth : 1
-  const cardStyle = expanded
-    ? { top: 0, left: 0, width: '100vw', height: '100dvh', transform: 'rotateY(180deg)' }
-    : {
-        top: `${box?.top ?? 0}px`,
-        left: `${box?.left ?? 0}px`,
-        width: `${box?.width ?? 0}px`,
-        height: `${box?.height ?? 0}px`,
-        transform: 'rotateY(0deg)',
-      }
+  const scale = frame.width > 0 ? tile.width / frame.width : 1
 
   return (
     <div className="app">
-      <main className="grid" aria-label="GENEX alphabet">
-        {stories.map((item, index) => (
-          <button
-            key={item.letter}
-            type="button"
-            ref={(node) => {
-              tileRefs.current[index] = node
-            }}
-            className="tile"
-            style={{ visibility: openIndex === index ? 'hidden' : 'visible' }}
-            aria-label={`${item.letter} — ${item.title}`}
-            onClick={() => openTile(index)}
-          >
-            <TileArt story={item} />
-            <span className="tile__word">{item.word}</span>
-          </button>
-        ))}
-      </main>
+      <div className="frame" ref={frameRef}>
+        <main className="grid" aria-label="GENEX alphabet">
+          {stories.map((item, index) => (
+            <button
+              key={item.letter}
+              type="button"
+              ref={(node) => {
+                tileRefs.current[index] = node
+              }}
+              className="tile"
+              style={{ visibility: openIndex === index ? 'hidden' : 'visible' }}
+              aria-label={`${item.letter} — ${item.title}`}
+              onClick={() => openTile(index)}
+            >
+              <TileArt story={item} />
+              <span className="tile__word">{item.word}</span>
+            </button>
+          ))}
+        </main>
+      </div>
 
       {story && (
         <div className={`stage${expanded ? ' stage--open' : ''}`}>
-          <div className="stage__veil" />
-          <div className="card" style={cardStyle}>
+          <div className="stage__veil" style={px(frame)} />
+
+          <div
+            className="card"
+            style={{
+              ...px(expanded ? frame : tile),
+              transform: expanded ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            }}
+          >
             <div className="card__face card__face--front">
               <TileArt story={story} eager />
               <span className="tile__word">{story.word}</span>
@@ -116,7 +136,11 @@ export default function App() {
             <div className="card__face card__face--back" {...backTap}>
               <div
                 className="story"
-                style={{ transform: expanded ? 'scale(1)' : `scale(${scale})` }}
+                style={{
+                  width: `${frame.width}px`,
+                  height: `${frame.height}px`,
+                  transform: expanded ? 'scale(1)' : `scale(${scale})`,
+                }}
               >
                 <div className="story__scroll">
                   <div className="story__inner">
