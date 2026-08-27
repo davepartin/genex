@@ -53,6 +53,14 @@ The filenames are the only wiring — drop the JPEGs into `public/tiles/` and th
 whose file is missing falls back to a lettered charcoal-on-cream stand-in, so the app stays
 playable either way. Run `npm run tiles:check` to see which are present.
 
+To add them without a terminal, open `public/tiles/` on GitHub, choose **Add file → Upload files**,
+and drag all 24 in at once. The **Tile images present** check on the pull request then confirms the
+result automatically.
+
+Filenames are case-sensitive once the site is served from Linux, so `Boot.jpeg` will not stand in
+for `boot.jpeg`. `npm run tiles:check` compares against the real directory listing and reports a
+misnamed file as `RENAME` rather than silently passing on macOS.
+
 Portrait art works best; each tile is rendered with `object-fit: cover` at roughly a 2:3 ratio.
 
 ## Story copy
