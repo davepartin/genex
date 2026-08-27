@@ -111,7 +111,7 @@ export default function App() {
               onClick={() => openTile(index)}
             >
               <TileArt story={item} />
-              <span className="tile__word">{item.word}</span>
+              {!item.hideWord && <span className="tile__word">{item.word}</span>}
             </button>
           ))}
         </main>
@@ -130,7 +130,7 @@ export default function App() {
           >
             <div className="card__face card__face--front">
               <TileArt story={story} eager />
-              <span className="tile__word">{story.word}</span>
+              {!story.hideWord && <span className="tile__word">{story.word}</span>}
             </div>
 
             <div className="card__face card__face--back" {...backTap}>

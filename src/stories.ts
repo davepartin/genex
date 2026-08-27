@@ -4,6 +4,8 @@ export type Story = {
   word: string
   /** Full story name shown as the title on the flipped card. */
   title: string
+  /** Set when the illustration already carries the word, so the tile stays clean. */
+  hideWord?: boolean
   keywords: string[]
   verseRef: string
   verseText: string
@@ -29,6 +31,7 @@ export const stories: Story[] = [
     letter: 'B',
     word: 'Boot',
     title: 'Boot',
+    hideWord: true,
     keywords: ['serpent', 'offspring', 'bruise', 'promise', 'crush'],
     verseRef: 'Genesis 3:15 ESV',
     verseText: '“he shall bruise your head, and you shall bruise his heel.”',
