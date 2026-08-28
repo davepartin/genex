@@ -13,6 +13,9 @@
  */
 .frame {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
@@ -27,13 +30,18 @@
 
 /* ---------- grid of touching tiles ---------- */
 
+/*
+ * Cells are square so each square drawing is shown whole. 4 across by 6 down
+ * makes the block 2:3, sized to whichever of width or height runs out first.
+ */
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(6, 1fr);
   gap: 0;
-  height: 100%;
   width: 100%;
+  width: min(100%, calc(100dvh * 2 / 3));
+  aspect-ratio: 2 / 3;
 }
 
 .tile {
@@ -55,11 +63,15 @@
   filter: brightness(1.12);
 }
 
+/*
+ * contain, never cover: the letter is drawn into the art and cropping cuts it
+ * off. Tiles not yet redrawn as squares pillarbox against the cream tile.
+ */
 .tile-art {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
